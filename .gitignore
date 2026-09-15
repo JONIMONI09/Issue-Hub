@@ -1,0 +1,6 @@
+# Local secrets - never commit
+deploykey*
+*.key
+*.pem
+id_rsa*
+.ed25519*

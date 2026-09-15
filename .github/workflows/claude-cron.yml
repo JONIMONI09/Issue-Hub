@@ -1,0 +1,60 @@
+name: Claude Cron (Issue Hub)
+
+# Daily autonomous duty for Claude Code, running INSIDE this repository.
+# Auth model (all scoped to THIS repo only):
+#   - GITHUB_TOKEN: built-in, exists only during the run, permissions below
+#   - Claude credentials: repository secret ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN
+# If neither Claude secret is set, the run skips gracefully (see guard step).
+
+on:
+  schedule:
+    - cron: '17 5 * * *' # daily 05:17 UTC
+  workflow_dispatch: {} # manual "Run workflow" button for testing/activation
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: claude-cron
+  cancel-in-progress: false
+
+jobs:
+  claude:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Guard - Claude credentials present?
+        id: guard
+        env:
+          HAS_API_KEY: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+          HAS_OAUTH: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN != '' }}
+        run: |
+          if [ "$HAS_API_KEY" = "true" ] || [ "$HAS_OAUTH" = "true" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "Claude credentials found - proceeding."
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "No ANTHROPIC_API_KEY / CLAUDE_CODE_OAUTH_TOKEN secret configured."
+            echo "To activate: Repo Settings > Secrets and actions > New repository secret"
+            echo "  - ANTHROPIC_API_KEY (Anthropic console) or CLAUDE_CODE_OAUTH_TOKEN (Claude subscription)"
+            echo "Then: Actions tab > Claude Cron (Issue Hub) > Run workflow."
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.guard.outputs.ready == 'true'
+        with:
+          fetch-depth: 0
+
+      - name: Claude Code - daily issue triage
+        if: steps.guard.outputs.ready == 'true'
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ github.token }}
+          timeout_minutes: '15'
+          prompt: |
+            Read PROMPT.md in the repository root and carry out the daily duty it describes.
+            The repository policy (README.md) and the issue templates apply. Everything you
+            write must be in English. Stay inside THIS repository.
