@@ -27,6 +27,11 @@ Central issue-tracking hub for JONIMONI09. This repo tracks issues for repositor
 - **Claude cron:** `.github/workflows/claude-cron.yml` runs the daily duty from [PROMPT.md](PROMPT.md) inside GitHub Actions (daily 05:17 UTC + manual "Run workflow" button). Auth is repo-scoped by design: built-in `GITHUB_TOKEN` (exists only during the run) + one repository secret (`ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN`) for Claude. Without the Claude secret the run skips gracefully - activation = add the secret, then trigger one manual run.
 - **Deploy key:** a dedicated ed25519 deploy key (local `~/.ssh/issuehub_deploy_ed25519`, SSH alias `github-issuehub`) is bound to THIS repository only (GitHub deploy keys are per-repo by design). It never touches other repos and is excluded from version control via `.gitignore`.
 
+## Docs
+- [VibeWorks MCP setup — verified facts for agents](docs/vibeworks-mcp-setup.md) — endpoint, auth type (Bearer `vw_…`, no OAuth/passkey), 401 codes, traps. Source-verified against vibeworks 1.0.8.
+- [VibeWorks MCP 401 analysis](docs/vibeworks-mcp-401-analysis.md) — root cause of the transient 401s and the rotation policy.
+- [vibeworks `get_code_graph` noFiles](docs/vibeworks-code-graph-nofiles.md) — evidence for the open upstream indexer bug (issue #5).
+
 ## Related
 - Self-hosted instance: https://vibeworks.morncloud.de (project "Harness")
 - Product repo: https://github.com/JONIMONI09/Mobile-Harness
