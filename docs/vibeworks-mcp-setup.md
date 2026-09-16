@@ -70,6 +70,8 @@ Source: `src/lib/boardConfig.ts` + `src/lib/mcp/tools.ts`, commit `08b07c3`.
 - `update_task` and `create_task` accept **a column name as `status`** in addition to `TODO|DOING|BLOCKED|DONE`. An unknown value returns HTTP 400: `Unknown status or column "…". Use TODO, DOING, BLOCKED, DONE or one of the column names: …`.
 - **`aiLocked` columns are hidden** from the `columns` array and any AI move into them is rejected with **403 `aiLock.columnLocked`**. A missing column name is therefore a feature, not a bug.
 - Agent-rule consequence: always talk about a task by its column name and re-read the task before relying on its column (the user can rename or add columns at any time).
+- **A column is a STATUS BUCKET, not a manual pile** (learned 2026-09-16): renaming a standard column renames it for **every** task in that state, and a column name is **never an instruction**. In project "Harness" the user renamed the standard `BLOCKED` column to `kann gelöscht werden`; every BLOCKED task therefore shows that name - it does **not** mean the task should be deleted. Do not infer user intent from a column name; ask instead.
+- Live mapping of project "Harness" (verified 2026-09-16): `TODO` -> `pending`, `DOING` -> `working on it`, `BLOCKED` -> `kann gelöscht werden`, `DONE` -> `Done`.
 
 ## Status
 Verified 2026-09-16: the auth facts above are unchanged from 1.0.8 (`d88ce45`) to 1.1.2 (`08b07c3`) — diff-verified, `route.ts`/`token.ts`/`installer.ts`/`keySettings.ts` untouched. The live instance reported **1.1.2** that evening (earlier the same evening it was still 1.1.1, so the rollout happened during the session); `tools/list` still returns the same **34 tool names**.
